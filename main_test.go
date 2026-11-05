@@ -13,7 +13,7 @@ import (
 )
 
 func TestCollidingProviderCallIDsKeepBothSnapshots(t *testing.T) {
-	dir := t.TempDir()
+	dir := directTempDir(t)
 	a, b := filepath.Join(dir, "a"), filepath.Join(dir, "b")
 	require.NoError(t, os.WriteFile(a, []byte("a0"), 0o600))
 	require.NoError(t, os.WriteFile(b, []byte("b0"), 0o600))

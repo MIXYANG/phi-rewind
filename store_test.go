@@ -9,6 +9,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func directTempDir(t *testing.T) string {
+	t.Helper()
+	// System temp paths may contain symlinks or Windows short-name aliases.
+	dir, err := filepath.EvalSymlinks(t.TempDir())
+	require.NoError(t, err)
+	return dir
+}
+
 func recordChange(t *testing.T, s *store, turn, path string, next *string) {
 	t.Helper()
 	before, err := readState(path)
@@ -24,8 +32,8 @@ func recordChange(t *testing.T, s *store, turn, path string, next *string) {
 }
 
 func TestRestoreRepeatedChangesAndNewFilesAfterReload(t *testing.T) {
-	dir := t.TempDir()
-	s, err := openStore(t.TempDir(), dir, "s1")
+	dir := directTempDir(t)
+	s, err := openStore(directTempDir(t), dir, "s1")
 	require.NoError(t, err)
 	path, created := filepath.Join(dir, "existing"), filepath.Join(dir, "created")
 	require.NoError(t, os.WriteFile(path, []byte("original"), 0o600))
@@ -54,7 +62,7 @@ func TestRestoreRepeatedChangesAndNewFilesAfterReload(t *testing.T) {
 func TestRestoreRejectsExternalChangesAndPendingRecords(t *testing.T) {
 	for _, mode := range []string{"after", "between", "pending"} {
 		t.Run(mode, func(t *testing.T) {
-			dir := t.TempDir()
+			dir := directTempDir(t)
 			s := &store{Path: filepath.Join(dir, "snapshots.json")}
 			path := filepath.Join(dir, "file")
 			require.NoError(t, os.WriteFile(path, []byte("original"), 0o600))
@@ -80,7 +88,7 @@ func TestRestoreRejectsExternalChangesAndPendingRecords(t *testing.T) {
 }
 
 func TestRestoreIgnoresAbandonedBranchAndIsRepeatable(t *testing.T) {
-	dir := t.TempDir()
+	dir := directTempDir(t)
 	s := &store{Path: filepath.Join(dir, "snapshots.json")}
 	old, current := filepath.Join(dir, "abandoned"), filepath.Join(dir, "current")
 	text := "old branch"
@@ -99,7 +107,7 @@ func TestRestoreIgnoresAbandonedBranchAndIsRepeatable(t *testing.T) {
 }
 
 func TestRestoreRollsBackWhenJournalCannotBeSaved(t *testing.T) {
-	dir := t.TempDir()
+	dir := directTempDir(t)
 	s := &store{Path: dir}
 	path := filepath.Join(dir, "file")
 	require.NoError(t, os.WriteFile(path, []byte("original"), 0o600))
@@ -114,7 +122,7 @@ func TestRestoreRollsBackWhenJournalCannotBeSaved(t *testing.T) {
 }
 
 func TestRestorePathCaseUsesFileIdentity(t *testing.T) {
-	dir := t.TempDir()
+	dir := directTempDir(t)
 	lower, upper := filepath.Join(dir, "file.txt"), filepath.Join(dir, "FILE.txt")
 	require.NoError(t, os.WriteFile(lower, []byte("original"), 0o600))
 	// On case-sensitive filesystems these must remain independent files.
@@ -129,7 +137,7 @@ func TestRestorePathCaseUsesFileIdentity(t *testing.T) {
 	if os.SameFile(a, b) {
 		want = 1
 	}
-	s, err := openStore(t.TempDir(), dir, "case")
+	s, err := openStore(directTempDir(t), dir, "case")
 	require.NoError(t, err)
 	one, two := "one", "two"
 	recordChange(t, s, "turn", lower, &one)
@@ -148,7 +156,7 @@ func TestRestorePathCaseUsesFileIdentity(t *testing.T) {
 }
 
 func TestHardLinksRejectedForCaptureAndRestore(t *testing.T) {
-	dir := t.TempDir()
+	dir := directTempDir(t)
 	path, alias := filepath.Join(dir, "file"), filepath.Join(dir, "linked")
 	require.NoError(t, os.WriteFile(path, []byte("original"), 0o600))
 	s := &store{Path: filepath.Join(dir, "journal.json")}
