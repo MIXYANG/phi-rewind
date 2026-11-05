@@ -1,0 +1,4 @@
+name: rewind
+version: "0.1.0"
+exec: ./phi-rewind
+description: Restore code and conversation before a user turn
