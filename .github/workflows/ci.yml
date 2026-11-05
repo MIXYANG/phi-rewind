@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: MIXYANG/phi
-          ref: e305f18c7b772f0cba59002c5897088671c6ff6f
+          ref: fba2e5dafb1a85b8c599243497dfc801ddd3a9fb
           path: phi
 
       - name: Set up Go

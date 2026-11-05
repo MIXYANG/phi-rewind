@@ -124,6 +124,9 @@ func (r *rewind) command(_ string, _ *ext.Context) error {
 			Label:  promptLabel(turn.Text),
 			Detail: turn.Timestamp.Local().Format("Jan 02 15:04:05"),
 		}
+		if turn.ImageCount > 0 {
+			items[i].Detail += fmt.Sprintf(" · Images: %d · Reattach after rewind", turn.ImageCount)
+		}
 	}
 	for {
 		choice, err := r.api.Select(ext.SelectRequest{Title: "Rewind · Select a message", Items: items})

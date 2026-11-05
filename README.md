@@ -19,7 +19,7 @@ There is no standalone release yet. `go.mod` temporarily replaces the SDK with
 
 ```sh
 git clone --branch feat/rewind-basic https://github.com/MIXYANG/phi.git phi
-git -C phi checkout e305f18c7b772f0cba59002c5897088671c6ff6f
+git -C phi checkout fba2e5dafb1a85b8c599243497dfc801ddd3a9fb
 git clone https://github.com/MIXYANG/phi-rewind.git
 cd phi-rewind
 go test ./...
@@ -77,8 +77,10 @@ palette or restart Phi. Older Phi versions do not provide the required APIs.
 - Conversation recovery preserves abandoned history using the host's new
   `EntryLeaf` record. Older Phi versions cannot read sessions containing it.
   The current model selection is preserved, including after reopening a session.
-- The composer receives stored user text, possibly including skill/reference
-  expansion. Image attachments are not refilled.
+- New turns refill the original input before skill/reference expansion and
+  extension rewrites. Older turns fall back to stored message text.
+  Image attachments are not refilled; the turn list shows their count and a
+  reminder to reattach them. Selected skills and references must also be reattached.
 - File recovery runs before conversation recovery. File failures attempt
   rollback and leave conversation unchanged. A subsequent session persistence
   failure can leave files restored while conversation remains unchanged.
